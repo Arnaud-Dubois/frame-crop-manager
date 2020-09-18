@@ -2,7 +2,9 @@
     <div>
         <h1 class="mb-4">Medias gallery</h1>
 
-        <router-link class="btn btn-primary" :to="{ name: 'media.add'}">Add new media</router-link>
+        <router-link class="btn btn-primary" :to="{ name: 'media.add'}">
+            <ImageIcon class="d-inline"/> Add new media
+        </router-link>
         <hr>
 
         <div v-if="medias.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
@@ -20,7 +22,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import MediasService from '@/services/Medias'
 import GalleryCard from './GalleryCard'
 
 export default {
@@ -38,7 +40,7 @@ export default {
     },
     methods: {
         fetchMedias() {
-            axios.get('api/medias')
+            MediasService.getAll()
                 .then(res => {
                     this.medias = res.data.data
                 })

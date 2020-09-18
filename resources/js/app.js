@@ -6,11 +6,25 @@ import { BootstrapVue } from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import { camelCase, upperFirst } from 'lodash';
 
 Vue.use(VueRouter)
 Vue.use(BootstrapVue)
 
 Vue.component('app', require('./App.vue').default);
+Vue.component('BaseLoader', require('./components/BaseLoader.vue').default);
+
+// Register icons folder
+const requireComponent = require.context('./components/icons', true,  /\.vue$/)
+requireComponent.keys().forEach(fileName => {
+    const componentConfig = requireComponent(fileName)
+
+    const componentName = upperFirst(
+        camelCase(fileName.replace(/^\.\//, '').replace(/\.\w+$/, ''))
+    )
+
+    Vue.component(componentName, componentConfig.default || componentConfig)
+})
 
 const router = new VueRouter({
     routes: [

@@ -1,44 +1,75 @@
 <template>
     <b-form @submit.prevent="onSubmit" enctype="multipart/form-data">
       
-      <div class="image-container mb-4 overflow-hidden rounded">
-        <img id="image-preview" :src="previewSrc" :alt="previewSrc" width="100%" height="100%">
-      </div>
+        <!-- Image preview -->
+        <h6>Preview cropped selection</h6>
+        <div style="background: #DDD" class="d-flex justify-center mb-4 rounded">
+        <div class="image-container bg-light overflow-hidden rounded">
+            <img id="image-preview" :src="previewSrc" :alt="previewSrc" width="100%" height="100%">
+        </div>
+        </div>
 
-      <b-form-group
+      
+        <!-- Coordinates -->
+        <h6 class="mt-4">Image coordinates</h6>
+        <div class="row my-3">
+            <div class="col-6">
+                <pre>width: {{ coordinates.width }}</pre>
+                <pre>height: {{ coordinates.height }}</pre>
+            </div>
+            <div class="col-6">
+                <pre>left: {{ coordinates.left }}</pre>
+                <pre>top: {{ coordinates.top }}</pre>
+            </div>
+        </div>
+        <!-- / Coordinates -->
+
+        <hr>
+
+        <!-- Tag form -->
+        <h6 class="mt-4">Create a custom tag</h6>
+        <b-form-group
         id="input-group-1"
-        label="Tag name:"
+        
         label-for="input-1"
         description="Add a custom tag to identify the part of the image"
-      >
+        >
         <b-form-input
-          id="input-1"
-          v-model="form.name"
-          type="text"
-          required
-          placeholder="Describe the custom tag"
+            id="input-1"
+            v-model="form.name"
+            type="text"
+            required
+            placeholder="Face, hair, color..."
         ></b-form-input>
-      </b-form-group>
+        </b-form-group>
 
-      <b-button type="submit" variant="primary">Submit tag</b-button>
+      <b-button class="float-right" type="submit" variant="primary">Create</b-button>
     </b-form>
 </template>
 
 <script>
-import axios from 'axios'
+import MediasService from '@/services/Medias'
 
 export default {
     name: 'form-tag',
     props: {
         previewSrc: {
             type: String
+        },
+        coordinates: {
+            type: Object
+        },
+        uploadedFile: {
+            type: null
         }
     },
     data() {
         return {
             form: {
                 name: '',
-                image: ''
+                image: '',
+                originalImage: 'https://images.pexels.com/photos/226746/pexels-photo-226746.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260',
+                coordinates: {}
             }
         }
     },
@@ -46,18 +77,42 @@ export default {
 
         onSubmit() {
             this.form.image = this.previewSrc
+            this.form.coordinates = this.coordinates
 
             let path = this.dataURLtoFile(this.previewSrc, `${this.form.name}.png`)
 
             const formData = new FormData()
+
+            // Set path
             formData.append('path', path, path.filename)
 
-            axios.post('api/medias', formData)
+            // Set coordinates
+            formData.append('width', this.form.coordinates.width)
+            formData.append('height', this.form.coordinates.height)
+            formData.append('left', this.form.coordinates.left)
+            formData.append('top', this.form.coordinates.top)
+
+            // Get original image
+            formData.append('original_image', this.uploadedFile)
+            
+            MediasService.post(formData)
                 .then(res => {
-                    console.log(res)
-                    this.$router.push({ name: 'home' })
+                    this.$bvToast.toast(`${path.name} created successfully.`, {
+                        title: `New tag created !`,
+                        variant: 'success',
+                        solid: true
+                    }).then(() => {
+                        this.$router.push({ name: 'home' })
+                    })
                 })
-                .catch(err => console.log(err))
+                .catch(err => {
+                    console.log(err.response)
+                    this.$bvToast.toast(err.response.data.message, {
+                        title: `Error !`,
+                        variant: 'danger',
+                        solid: true
+                    })
+                })
         },
 
         dataURLtoFile(dataUrl, filename) {
@@ -77,6 +132,5 @@ export default {
     .image-container {
         width: 100px;
         height: 100px;
-        background: gray;
     }
 </style>

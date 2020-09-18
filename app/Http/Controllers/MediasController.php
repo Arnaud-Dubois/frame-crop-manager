@@ -43,9 +43,11 @@ class MediasController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'path' => 'image|nullable'
+            'path' => 'image|nullable',
+            'original_image' => 'image|nullable|max:1999'
         ]);
 
+        // Get path
         $filenameWithExt = request('path')->getClientOriginalName();
         $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
         $extension = request('path')->getClientOriginalExtension();
@@ -54,9 +56,31 @@ class MediasController extends Controller
 
         $pathPublic = 'storage/images/' . $filenameToStore;
 
+        // Get coordinates
+        $width = request('width');
+        $height = request('height');
+        $left = request('left');
+        $top = request('top');
+
+        // Get original image
+        if($request->hasFile('original_image')) {
+            $originalFilenameWithExt = $request->file('original_image')->getClientOriginalName();
+            $originalFilename = pathinfo($originalFilenameWithExt, PATHINFO_FILENAME); // extract name without ext
+            $originalExtension = $request->file('original_image')->getClientOriginalExtension();
+            $originalFilenameToStore= $originalFilename . '_' . time() . '.' . $originalExtension;
+            $originalPath= $request->file('original_image')->storeAs('public/original_images', $originalFilenameToStore);
+        } else {
+            // $originalFilenameToStore = 'noimage.jpg';
+        }
+
         $media = new Media;
         $media->path = $pathPublic;
         $media->name = $filename;
+        $media->width = $width;
+        $media->height = $height;
+        $media->left = $left;
+        $media->top = $top;
+        $media->original_image = $originalFilenameToStore;
         $media->save();
     }
 
