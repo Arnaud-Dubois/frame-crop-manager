@@ -59,3 +59,38 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Migration Guide
+
+Check that composer.json required php 8.0 ("php": "^7.3|^8.0")
+
+Chacke that laravel/ui is up to date ("laravel/ui": "^3.0")
+
+'composer require laravel/ui'
+
+'composer update'
+
+'composer install'
+
+'npm install'
+
+'npm audit fix'
+
+## Use sql db
+
+With 'Puissant coquillage' New-Item database/database.sqlite
+
+Change .env with DB_CONNECTION=sqlite
+
+Remove :
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORS=
+
+'php artisan migrate'
+
+'php artisan serve'
